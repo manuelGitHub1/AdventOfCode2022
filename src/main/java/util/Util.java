@@ -46,6 +46,14 @@ public class Util {
       return getAoCTestInput(day).stream().map(Integer::parseInt).collect(Collectors.toList());
    }
 
+   public static List<String> getIntRangeAsList( String start, String end ) {
+      return getIntRangeAsList(Integer.parseInt(start), Integer.parseInt(end));
+   }
+
+   public static List<String> getIntRangeAsList( int start, int end ) {
+      return IntStream.range(start, end + 1).mapToObj(i -> "|" + String.valueOf(i) + "|").toList();
+   }
+
    public static String getIntRangeAsString( String start, String end ) {
       return getIntRangeAsString(Integer.parseInt(start), Integer.parseInt(end));
    }
