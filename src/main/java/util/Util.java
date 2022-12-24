@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -13,15 +12,10 @@ import java.util.stream.Stream;
 
 public class Util {
 
-   private static final Logger _logger = Logger.getLogger(Util.class.getName());
-
    public static List<String> fileAsStrings( String filePath ) {
       final Path path = Paths.get(filePath);
-      _logger.info("Read file from Path " + path);
       try {
-         final List<String> lines = Files.readAllLines(path);
-         _logger.info("Read " + lines.size() + " lines from file");
-         return lines;
+         return Files.readAllLines(path);
       }
       catch ( IOException e ) {
          throw new RuntimeException(e);

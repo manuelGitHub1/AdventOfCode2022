@@ -1,64 +1,104 @@
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 
 public class Day07 extends EveryDay {
 
    public static void main( String[] args ) {
       Day07 today = new Day07();
-      today.testInput = true;
+//      today.testInput = true;
       today.firstPart();
+      today.secondPart();
+   }
+
+   private static void findCandidates( List<Directory> candidates, LinkedList<Directory> subDirectories, Function<Long, Boolean> function ) {
+
+      for ( Directory subDirectory : subDirectories ) {
+         if ( function.apply(subDirectory.getDirectorySize()) ) {
+            candidates.add(subDirectory);
+         }
+         if ( !subDirectory.getSubDirectories().isEmpty() ) {
+            findCandidates(candidates, subDirectory.getSubDirectories(), function);
+         }
+      }
    }
 
    private void firstPart() {
-      final LinkedList<Directory> directories = new LinkedList<>();
 
+      final Directory _rootDirectory = getRootDirectory();
+
+      final List<Directory> candidates = new ArrayList<>();
+      findCandidates(candidates, _rootDirectory.getSubDirectories(), x -> x <= 100_000L);
+
+      final long sum = candidates.stream().mapToLong(Directory::getDirectorySize).sum();
+
+      if ( testInput ) {
+         final int expected = 95437;
+         if ( sum != expected ) {
+            throw new IllegalStateException("Wrong result. Expected: " + expected + ", actual: " + sum);
+         }
+      } else {
+         if ( sum != 1582412 ) {
+            throw new IllegalStateException("Wrong result");
+         }
+      }
+
+      System.out.println(sum);
+   }
+
+   private Directory getRootDirectory() {
       Directory _currentDirectory = null;
-
+      Directory rootDirectory = null;
       for ( String line : input() ) {
          final Input input = new Input(line);
          if ( input.getType() == Type.cd_down ) {
             final String directoryName = input.getParameterOrNull();
-            _currentDirectory = new Directory(directoryName);
-            directories.add(_currentDirectory);
-         } else if ( input.getType() == Type.directory ) {
-            _currentDirectory.getSubDirectories().add(new Directory(input.getParameterOrNull()));
+            final Directory newDirectory = new Directory(directoryName);
+            if ( _currentDirectory == null ) {
+               rootDirectory = newDirectory;
+            } else {
+               newDirectory.setParentDirectory(_currentDirectory);
+               _currentDirectory.getSubDirectories().add(newDirectory);
+            }
+            _currentDirectory = newDirectory;
+
+         } else if ( input.getType() == Type.cd_up ) {
+            _currentDirectory = _currentDirectory.getParentDirectory();
          } else if ( input.getType() == Type.file ) {
             _currentDirectory.addToDirectorySize(input.getFileInfoOrNull().fileSize());
          }
       }
+      return rootDirectory;
+   }
 
+   private void secondPart() {
+      final long totalDiskSpace = 70000000L;
+      final long spaceNeeded = 30000000L;
+      final Directory rootDirectory = getRootDirectory();
+      final long rootDirectoryDirectorySize = rootDirectory.getDirectorySize();
+      final long spaceToDelete = spaceNeeded - (totalDiskSpace - rootDirectoryDirectorySize);
 
+      final List<Directory> candidates = new ArrayList<>();
+      findCandidates(candidates, rootDirectory.getSubDirectories(), x -> x >= spaceToDelete);
 
+      final long sum = candidates.stream().mapToLong(Directory::getDirectorySize).min().getAsLong();
 
-      Collections.reverse(directories);
-      for ( Directory directory : directories ) {
-         final List<String> subdirectories = directory.getSubDirectories().stream().map(Directory::getDirectoryName).toList();
-         directories.stream()
-               .filter(d -> subdirectories.contains(d.getDirectoryName()))
-               .map(Directory::getDirectorySize)
-               .forEach(size -> directory.addToDirectorySize(size));
+      if ( testInput ) {
+         final int expected = 24933642;
+         if ( sum != expected ) {
+            throw new IllegalStateException("Wrong result. Expected: " + expected + " but actual is: " + sum);
+         }
+      } else {
+         final int expected = 3696336;
+         if ( sum != expected ) {
+            throw new IllegalStateException("Wrong result. Expected: " + expected + " but actual is: " + sum);
+         }
       }
-      Collections.reverse(directories);
 
-      long wantedSize = 100_000L;
-
-      directories.forEach(System.out::println);
-
-      final List<Directory> candidates = directories.stream().filter(d -> d.getDirectorySize() <= wantedSize).toList();
-
-      candidates.forEach(directory -> System.out.println(directory.getDirectoryName() + " " + directory.getDirectorySize()));
-
-      final long sum = candidates.stream().mapToLong(Directory::getDirectorySize).sum();
       System.out.println(sum);
-
-      assert sum > 1_290_008;
-
-      // Look for almost size = 100000
-
    }
 
    enum Type {

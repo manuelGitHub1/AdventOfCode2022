@@ -4,6 +4,17 @@ import java.util.LinkedList;
 class Directory {
 
    private final String                _directoryName;
+
+   private Directory _parentDirectory;
+
+   public Directory getParentDirectory() {
+      return _parentDirectory;
+   }
+
+   public void setParentDirectory( Directory parentDirectory ) {
+      _parentDirectory = parentDirectory;
+   }
+
    private final LinkedList<Directory> _subDirectories = new LinkedList<>();
 
    private long directorySize;
@@ -19,7 +30,7 @@ class Directory {
    }
 
    public long getDirectorySize() {
-      return directorySize;
+      return directorySize + _subDirectories.stream().mapToLong(Directory::getDirectorySize).sum();
    }
 
    public LinkedList<Directory> getSubDirectories() {
