@@ -45,7 +45,7 @@ public class Util {
    }
 
    public static List<String> getIntRangeAsList( int start, int end ) {
-      return IntStream.range(start, end + 1).mapToObj(i -> "|" + String.valueOf(i) + "|").toList();
+      return IntStream.range(start, end + 1).mapToObj(i -> "|" + i + "|").toList();
    }
 
    public static String getIntRangeAsString( String start, String end ) {
